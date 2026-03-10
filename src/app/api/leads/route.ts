@@ -6,67 +6,46 @@ interface LeadPayload {
     whatsapp: string;
     area: string;
     resumen?: string;
+    aceptaTerminos?: boolean;
 }
 
 export async function POST(request: Request) {
     try {
         const body: LeadPayload = await request.json();
-
-        const { nombre, apellido, whatsapp, area, resumen } = body;
+        const { nombre, apellido, whatsapp, area, resumen, aceptaTerminos } = body;
 
         // Validación básica de campos obligatorios
         if (!nombre || !apellido || !whatsapp || !area) {
             return NextResponse.json(
-                {
-                    success: false,
-                    message:
-                        "Campos obligatorios faltantes: nombre, apellido, whatsapp y área son requeridos.",
-                },
+                { success: false, message: "Campos obligatorios faltantes." },
                 { status: 400 }
             );
         }
 
-        // Validación mínima del número de WhatsApp
-        const whatsappClean = whatsapp.replace(/\s+/g, "");
-        if (whatsappClean.length < 7) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    message: "Número de WhatsApp inválido.",
-                },
-                { status: 400 }
-            );
-        }
+        // Simular guardado rápido en Base de Datos (ej. Supabase / Vercel KV / MongoDB)
+        // o inserción en una hoja de Google Sheets para el equipo de secretarias.
+        await new Promise((resolve) => setTimeout(resolve, 600));
 
-        // Simular procesamiento / guardado en base de datos
-        // Aquí iría la integración real con Google Sheets, SendGrid o base de datos
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
-        // Log en servidor (en producción esto iría a un logger estructurado)
-        console.log("✅ Nuevo lead cualificado recibido:", {
-            nombre,
-            apellido,
+        // Log estructurado simulando un sistema real
+        console.log("💾 [SILENT SAVE EXECUTED] Lead cualificado respaldado:", {
+            id: crypto.randomUUID(),
+            nombreCompleto: `${nombre} ${apellido} `,
             whatsapp,
-            area,
-            resumen: resumen || "(Sin resumen)",
+            areaLegal: area,
+            resumenCorto: resumen ? resumen.slice(0, 50) + "..." : "(Sin resumen)",
+            aceptoTerminosCRO: aceptaTerminos,
             timestamp: new Date().toISOString(),
+            estado: "PENDING_WHATSAPP_MESSAGE" // Si el cliente no escribe, el equipo lo contacta
         });
 
         return NextResponse.json(
-            {
-                success: true,
-                message: "Lead cualificado recibido exitosamente.",
-            },
+            { success: true, message: "Lead respaldado exitosamente." },
             { status: 200 }
         );
     } catch (error) {
-        console.error("❌ Error al procesar el lead:", error);
-
+        console.error("❌ Error en el Silent Save:", error);
         return NextResponse.json(
-            {
-                success: false,
-                message: "Error interno del servidor. Intente de nuevo más tarde.",
-            },
+            { success: false, message: "Error interno." },
             { status: 500 }
         );
     }

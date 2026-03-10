@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Suspense } from "react";
 import SmartContactForm from "@/components/SmartContactForm";
 import {
   ShieldCheck,

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
     ArrowRight,
     ArrowLeft,
@@ -40,7 +41,7 @@ const AREAS = [
     "Otro",
 ];
 
-function buildWhatsAppUrl(data: FormData): string {
+function buildWhatsAppUrl(data: FormData, utmSource: string | null, utmCampaign: string | null): string {
     const lines = [
         `🤝 *Nueva Solicitud de Consulta Legal*`,
         ``,
@@ -54,11 +55,23 @@ function buildWhatsAppUrl(data: FormData): string {
         `✅ _El cliente comprende que la consulta conlleva honorarios profesionales._`,
     ];
 
+    // Inyectar UTMs si existen
+    if (utmSource || utmCampaign) {
+        lines.push(``);
+        lines.push(`🔍 *Origen de Contacto:*`);
+        if (utmSource) lines.push(`- Medio: ${utmSource}`);
+        if (utmCampaign) lines.push(`- Campaña: ${utmCampaign}`);
+    }
+
     const message = lines.join("\n");
     return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 }
 
 export default function SmartContactForm() {
+    const searchParams = useSearchParams();
+    const utmSource = searchParams.get("utm_source");
+    const utmCampaign = searchParams.get("utm_campaign");
+
     const [step, setStep] = useState<1 | 2 | 3>(1);
     const [formData, setFormData] = useState<FormData>(initialData);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -104,11 +117,42 @@ export default function SmartContactForm() {
 
         setIsSubmitting(true);
 
-        // Pequeña pausa para que el usuario vea el estado "Procesando"
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        try {
+            // ── 1. "Silent Save" al Backend (Base de Datos / Google Sheets) ──
+            // Esto asegura que, si el usuario no envía el mensaje en WhatsApp, 
+            // la Dra. Mirna ya tiene su número guardado como "Lead Incompleto".
+            await fetch("/api/leads", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    ...formData,
+                    utmSource,
+                    utmCampaign
+                }),
+            });
+            // Importante: No bloqueamos al usuario si la API falla.
+            // El objetivo principal es llevarlo a WhatsApp lo antes posible.
+        } catch (err) {
+            console.warn("No se pudo hacer el guardado silencioso, continuando a WhatsApp...", err);
+        }
 
-        // ── Construir y abrir el enlace de WhatsApp con el resumen del prospecto ──
-        const url = buildWhatsAppUrl(formData);
+        // ── Disparar Píxel de Meta (Facebook Ads) ──
+        try {
+            if (typeof window !== "undefined" && window.fbq) {
+                window.fbq("track", "Lead", {
+                    content_category: formData.area,
+                });
+                console.log("📈 Píxel de Meta 'Lead' disparado con éxito.");
+            }
+        } catch (err) {
+            console.warn("No se pudo ejecutar fbq", err);
+        }
+
+        // Pequeña pausa adicional solo para experiencia de usuario firme
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        // ── 2. Construir y abrir el enlace de WhatsApp con el resumen del prospecto ──
+        const url = buildWhatsAppUrl(formData, utmSource, utmCampaign);
         window.open(url, "_blank", "noopener,noreferrer");
 
         setIsSubmitting(false);
@@ -138,7 +182,7 @@ export default function SmartContactForm() {
 
                 {/* Botón de respaldo por si el popup fue bloqueado */}
                 <a
-                    href={buildWhatsAppUrl(formData)}
+                    href={buildWhatsAppUrl(formData, utmSource, utmCampaign)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mb-6 flex items-center gap-2 rounded-xl bg-[#25D366] px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-[#25D366]/30 transition-all duration-200 hover:bg-[#20be5c] hover:shadow-xl active:scale-[0.98]"
@@ -201,8 +245,8 @@ export default function SmartContactForm() {
             <div className="mb-6 flex items-center gap-3">
                 <div
                     className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-colors ${step >= 1
-                            ? "bg-amber-500 text-white shadow-sm shadow-amber-500/30"
-                            : "bg-slate-100 text-slate-400"
+                        ? "bg-amber-500 text-white shadow-sm shadow-amber-500/30"
+                        : "bg-slate-100 text-slate-400"
                         }`}
                 >
                     1
@@ -213,8 +257,8 @@ export default function SmartContactForm() {
                 />
                 <div
                     className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-colors ${step === 2
-                            ? "bg-amber-500 text-white shadow-sm shadow-amber-500/30"
-                            : "bg-slate-100 text-slate-400"
+                        ? "bg-amber-500 text-white shadow-sm shadow-amber-500/30"
+                        : "bg-slate-100 text-slate-400"
                         }`}
                 >
                     2
