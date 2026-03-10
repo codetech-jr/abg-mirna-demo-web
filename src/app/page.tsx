@@ -1,3 +1,4 @@
+import Image from "next/image";
 import SmartContactForm from "@/components/SmartContactForm";
 import {
   ShieldCheck,
@@ -363,18 +364,15 @@ function BioSection() {
             <div className="relative">
               {/* Decorative glow */}
               <div className="absolute -inset-4 rounded-2xl bg-amber-500/10 blur-2xl" />
-              <div className="relative min-h-[400px] w-full max-w-sm rounded-2xl border-4 border-amber-500 bg-slate-800 flex items-center justify-center shadow-2xl shadow-amber-500/10 sm:min-h-[460px] sm:max-w-md">
-                <div className="text-center p-6">
-                  <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-slate-700 ring-4 ring-amber-500/30">
-                    <span className="text-2xl font-black text-amber-400">MG</span>
-                  </div>
-                  <p className="text-sm font-medium text-slate-500">
-                    Foto Profesional Mirna Garban
-                  </p>
-                  <p className="mt-1 text-xs text-slate-600">
-                    (Reemplazar con imagen real)
-                  </p>
-                </div>
+              <div className="relative min-h-[400px] w-full max-w-sm overflow-hidden rounded-2xl border-4 border-amber-500 shadow-2xl shadow-amber-500/10 sm:min-h-[460px] sm:max-w-md">
+                <Image
+                  src="/mirna.jpg"
+                  alt="Dra. Mirna Garban"
+                  fill
+                  className="object-cover object-center"
+                  sizes="(max-width: 640px) 100vw, 400px"
+                  priority
+                />
               </div>
             </div>
           </div>
