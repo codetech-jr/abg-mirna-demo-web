@@ -360,11 +360,11 @@ function BioSection() {
           </div>
 
           {/* Right: Photo placeholder */}
-          <div className="flex justify-center lg:justify-end">
-            <div className="relative">
+          <div className="flex w-full justify-center lg:justify-end">
+            <div className="relative w-full max-w-sm sm:max-w-md">
               {/* Decorative glow */}
               <div className="absolute -inset-4 rounded-2xl bg-amber-500/10 blur-2xl" />
-              <div className="relative min-h-[400px] w-full max-w-sm overflow-hidden rounded-2xl border-4 border-amber-500 shadow-2xl shadow-amber-500/10 sm:min-h-[460px] sm:max-w-md">
+              <div className="relative h-[400px] w-full overflow-hidden rounded-2xl border-4 border-amber-500 shadow-2xl shadow-amber-500/10 sm:h-[460px]">
                 <Image
                   src="/mirna.jpg"
                   alt="Dra. Mirna Garban"
