@@ -125,19 +125,17 @@ export default function LeadForm() {
           {[1, 2].map((s) => (
             <div key={s} className="flex items-center gap-2">
               <div
-                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ${
-                  step >= s
+                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ${step >= s
                     ? "bg-amber-500 text-white shadow-md shadow-amber-500/30"
                     : "bg-slate-100 text-slate-400"
-                }`}
+                  }`}
               >
                 {s}
               </div>
               {s < 2 && (
                 <div
-                  className={`h-0.5 w-8 rounded-full transition-all duration-500 ${
-                    step > s ? "bg-amber-400" : "bg-slate-200"
-                  }`}
+                  className={`h-0.5 w-8 rounded-full transition-all duration-500 ${step > s ? "bg-amber-400" : "bg-slate-200"
+                    }`}
                 />
               )}
             </div>
@@ -201,7 +199,7 @@ export default function LeadForm() {
               name="whatsapp"
               type="tel"
               required
-              placeholder="+58 412 000 0000"
+              placeholder="+58 422 801 6403"
               value={formData.whatsapp}
               onChange={handleChange}
               className={inputClass}
